@@ -57,11 +57,17 @@ def split_df(df, A, B, A11, B11, r):
             b1 = (b1 + 10000000) - 6000000
         else:
             b1 = b1
+
+        if int(str(b1)[-5:]) >= 60000:
+            b1 = (b1 + 100000) - 60000
+        else:
+            b1 = b1
         print("b1:", b1)
         if int(str(b1)[-5:]) >= 50000:
             df_i = df[(df['b'].astype(int) >= b1) & (df['b'].astype(int) < ((b1 + 100000) - 60000))]
         else:
             df_i = df[(df['b'].astype(int) >= b1) & (df['b'].astype(int) < b1 + 100000)]
+        # df_i = df[(df['b'].astype(int) >= b1) & (df['b'].astype(int) < b1 + 100000)]
         df_dict['df_'+str(i+1)] = df_i
         b1_values.append(b1)  # Add b1 to the list
     print(df_dict)

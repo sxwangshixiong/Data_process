@@ -111,7 +111,7 @@ def annotate_objects(images_path_out):
 
 def category_statistics():
     # images_path = "/home/sxwang/SOTAtest/231215MightyOutput/20231215_172140641/result_out/-"
-    images_path = "/home/sxwang/SOTAtest/231219MightyOutput/20231219_154100/20231219_154141793/result_out/df_15_20231219_154202807"
+    images_path = "/home/sxwang/SOTAtest/231219MightyOutput/20231219_133013/20231219_135601721/result_out/df_1_20231219_140738988"
     new_folder_path = os.path.join(images_path + "/result")
     if not os.path.exists(new_folder_path):
         os.makedirs(new_folder_path)

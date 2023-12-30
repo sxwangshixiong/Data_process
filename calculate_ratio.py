@@ -26,6 +26,8 @@ def extract_contour_and_calculate_ratio(image):
     total_pixels = image.shape[0] * image.shape[1]
     # 计算并返回比例
     ratio = round((object_pixels / total_pixels) * 100, 3)
+    print("object_pixels: ", object_pixels)
+    print("total_pixels: ", total_pixels)
     return ratio, blank_image
 
 # 定义函数：使用分水岭算法提取轮廓并计算比例
@@ -70,7 +72,7 @@ def extract_contour_and_calculate_ratio_watershed(image):
     # 计算并返回比例
     ratio = round((object_pixels / total_pixels) * 100, 3)
     if ratio > 50:
-        print("wrong!")
+        print("more than 50!")
         ratio = 50
 
     return ratio, blank_image
@@ -81,7 +83,8 @@ def convert_and_calculate_object_ratio(bmp_image_path, jpg_image_path):
     image = cv2.imread(bmp_image_path, cv2.IMREAD_COLOR)
     # 裁剪图像
     image = image[:, 35:-85]
-    image = image[0:-80, :]
+#    image = image[0:-80, :]
+    image = image[80:720, :]
     # 调整图像的亮度
     bright_image = cv2.convertScaleAbs(image, alpha=1, beta=0)
     # 显示原始图像和调整亮度后的图像；    #cv2.imshow('Original Image', image)；    #cv2.imshow('Bright Image', bright_image)；    #cv2.waitKey(1)；    #cv2.destroyAllWindows()

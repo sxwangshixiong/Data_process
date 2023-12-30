@@ -17,14 +17,14 @@ if __name__ == "__main__":
     # test_time_start = 1450
     # test_time_end = 1451
 
-    directory_path_or = "/home/sxwang/SOTAtest/231219MightyOutput/20231219_154100/20231219_154141793"
+    directory_path_or = "/home/sxwang/SOTAtest/231219MightyOutput/20231219_133013/20231219_135601721"
 
-    test_time_start = 1541
-    test_time_end = 1559
+    test_time_start = 1356
+    test_time_end = 1359
     test_time_start_1 = 0
     test_time_end_1 = 0
     directory_path = directory_path_or + "/raw_images"
-    r = 15   # 按需更改
+    r = 5   # 按需更改
     n = 5   # 按需更改
     A = 100000 * test_time_start
     B = 100000 * test_time_end

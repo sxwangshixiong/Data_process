@@ -23,7 +23,7 @@ def click_event(event, x, y, flags, param):
                             colors[categories.index(cat)], 2)
 
 
-def draw_rectangle_and_save(images_path, images_path_out):
+def draw_rectangle_and_save(images_path, images_path_out, image_range):
     filenames = sorted(os.listdir(images_path))
 
     for filename in filenames:
@@ -32,7 +32,7 @@ def draw_rectangle_and_save(images_path, images_path_out):
             print(f"无法读取图像：{filename}")
             continue
 
-        cv2.rectangle(image, (0, 190), (1280, 720), (0, 0, 255), 1)
+        cv2.rectangle(image, (0, image_range), (1280, 720), (0, 0, 255), 1)
         original_jpg_filename = filename.replace('T.jpg', '.jpg')
         cv2.imwrite(os.path.join(images_path_out, original_jpg_filename), image)
 
@@ -71,11 +71,12 @@ def annotate_objects_A(images_path_out):
 
     return df
 
-def annotate_objects(images_path_out):
+
+def annotate_objects(images_path_out, image_range):
     global counts, category
     df = pd.DataFrame(columns=['filename'] + categories)
 
-    filenames = sorted([f for f in os.listdir(images_path_out) if f.endswith('T.jpg')])
+    filenames = sorted([f for f in os.listdir(images_path_out) if f.endswith('.jpg')])
     total_images = len(filenames)
 
     for idx, filename in enumerate(filenames):
@@ -90,12 +91,12 @@ def annotate_objects(images_path_out):
             cv2.setMouseCallback('Image', click_event, param=image)  # 将图像作为参数传递
 
             while True:
-                cv2.rectangle(image, (0, 190), (1280, 720), colors[categories.index(category)], 2)
+                cv2.rectangle(image, (0, image_range), (1280, 720), colors[categories.index(category)], 2)
                 for idx, cat in enumerate(categories):
                     cv2.putText(image, f"{cat}: {counts[cat]}", (10 + 180 * idx, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, colors[categories.index(cat)], 2)
                 cv2.imshow('Image', image)
                 if cv2.waitKey(1) & 0xFF == ord('n'):
-                    cv2.rectangle(image, (0, 190), (1280, 720), (0, 0, 255), 2)
+                    cv2.rectangle(image, (0, image_range), (1280, 720), (0, 0, 255), 2)
                     break
 
             # 每个类别后清除坐标列表
@@ -109,17 +110,15 @@ def annotate_objects(images_path_out):
     return df
 
 
-def category_statistics():
-    # images_path = "/home/sxwang/SOTAtest/231215MightyOutput/20231215_172140641/result_out/-"
-    images_path = "/home/sxwang/SOTAtest/231229MightyOutput/20231229_150659/20231229_152308991/result_out/df_5_20231229_161511211"
+def category_statistics(images_path, image_range):
+
     new_folder_path = os.path.join(images_path + "/result")
     if not os.path.exists(new_folder_path):
         os.makedirs(new_folder_path)
     images_path_out = new_folder_path
-    draw_rectangle_and_save(images_path, images_path_out)
-    df = annotate_objects(images_path_out)
+    draw_rectangle_and_save(images_path, images_path_out, image_range)
+    df = annotate_objects(images_path_out, image_range)
     df.to_excel(images_path + "/" + str(images_path)[-23:] + ".xlsx")
     print(df)
 
-if __name__ == "__main__":
-    category_statistics()
+

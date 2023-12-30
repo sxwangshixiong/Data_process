@@ -8,15 +8,7 @@ from calculate_ratio_light import process_images_and_calculate_ratios
 # from calculate_ratio_seg import process_images_and_calculate_ratios
 
 if __name__ == "__main__":
-    # 指定要处理的图片目录
-    # directory_path = "/home/sxwang/SOTAtest/test"
-    # #directory_path_or = "/home/sxwang/SOTAtest/231215MightyOutput/20231215_172140641"
-    # test_time_start = 1721
-    # test_time_end = 1746
-    # directory_path_or = "/home/sxwang/SOTAtest/sample"
-    # test_time_start = 1450
-    # test_time_end = 1451
-
+    # 图片目录
     directory_path_or = "/home/sxwang/SOTAtest/231229MightyOutput/20231229_150659/20231229_152308991"
 
     test_time_start = 1523
@@ -38,5 +30,5 @@ if __name__ == "__main__":
     df_all, df_dict, b1 = data_average_caculate(df, directory_path_or, A, B, A11, B11, r)
     sample_chose(df_all, df_dict, directory_path, directory_path_or, b1, n)
 
-    print(df_all)
+    # print(df_all)
 

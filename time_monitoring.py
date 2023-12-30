@@ -17,7 +17,9 @@ def time_monitor(directory_path, filenames):
 
     for filenames in filenames:
         try:
-            time = pd.to_datetime(filenames[:-4][-9:], format='%H%M%S%f')
+            # time = pd.to_datetime(filenames[:-4][-9:], format='%H%M%S%f')
+            time = pd.to_datetime(filenames[:-5][-8:], format='%H%M%S%f') #T
+            print(time)
             # labeled
             #time = pd.to_datetime(filenames[:-8][-9:], format='%H%M%S%f')
             times.append(time)
@@ -86,6 +88,7 @@ def time_monitor(directory_path, filenames):
     # 显示图
     plt.show()
 
+    return average_difference
 
 
 

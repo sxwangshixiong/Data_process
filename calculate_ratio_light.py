@@ -29,7 +29,7 @@ def extract_contour_and_calculate_ratio(image):
     return ratio, blank_image
 
 # 定义函数：使用分水岭算法提取轮廓并计算比例
-def extract_contour_and_calculate_ratio_watershed(image):
+def extract_contour_and_calculate_ratio_watershed(image, inuput_ratio, inuput_contour_ratio):
     # 在这个函数中，可以调整以下几个参数以改变输出效果:
     #1.`cv2.threshold`函数中的阈值和最大值：这两个参数决定了二值化图像的阈值和最大值。调整这两个参数可以改变二值化图像的效果，从而影响分水岭算法的结果。
     #2.`ndimage.distance_transform_edt`函数：这个函数用于计算二值图像的欧氏距离变换。可以使用其他类型的距离变换，例如曼哈顿距离或切比雪夫距离，看看这是否会改善结果。
@@ -68,12 +68,12 @@ def extract_contour_and_calculate_ratio_watershed(image):
     object_pixels = np.sum(blank_image == 0)
     total_pixels = image.shape[0] * image.shape[1]
     # 计算并返回比例
-    ratio = round((object_pixels / total_pixels) * 100, 3)
-    if ratio > 50:
-        print("wrong!")
-        ratio = 50
+    watershed_ratio = round((object_pixels / total_pixels) * 100, 3)
+    if watershed_ratio > 0.75 * (inuput_ratio + inuput_contour_ratio):
+        print("Warning!:" + str(watershed_ratio))
+        watershed_ratio = 0.75 * (inuput_ratio + inuput_contour_ratio)
 
-    return ratio, blank_image
+    return watershed_ratio, blank_image
 
 # 定义函数：转换、裁剪和计算对象比率
 def convert_and_calculate_object_ratio(bmp_image_path, jpg_image_path):
@@ -93,7 +93,7 @@ def convert_and_calculate_object_ratio(bmp_image_path, jpg_image_path):
     # 对图像进行二值化处理
     _, thresholded_image = cv2.threshold(grayscale_image, 135, 255, cv2.THRESH_BINARY)
     # 保存二值化后的图像
-    binary_image_path = bmp_image_path.replace('.bmp', '_binary.jpg')
+    binary_image_path = bmp_image_path.replace('T.jpg', '_binary.jpg')
     cv2.imwrite(binary_image_path, thresholded_image)
     # 计算对象像素和总像素
     object_pixels = np.sum(thresholded_image == 255)
@@ -103,12 +103,12 @@ def convert_and_calculate_object_ratio(bmp_image_path, jpg_image_path):
     # 提取轮廓并计算比例
     contour_ratio, contour_image = extract_contour_and_calculate_ratio(image)
     # 保存轮廓图像
-    contour_image_path = bmp_image_path.replace('.bmp', '_contour.jpg')
+    contour_image_path = bmp_image_path.replace('T.jpg', '_contour.jpg')
     cv2.imwrite(contour_image_path, contour_image)
     # 使用分水岭算法提取轮廓并计算比例
-    watershed_ratio, watershed_image = extract_contour_and_calculate_ratio_watershed(image)
+    watershed_ratio, watershed_image = extract_contour_and_calculate_ratio_watershed(image, ratio, contour_ratio)
     # 保存分水岭图像
-    watershed_image_path = bmp_image_path.replace('.bmp', '_watershed.jpg')
+    watershed_image_path = bmp_image_path.replace('T.jpg', '_watershed.jpg')
     cv2.imwrite(watershed_image_path, watershed_image)
     # 计算平均比例
     avg_ratio = round(((ratio + contour_ratio + watershed_ratio) / 3), 3)
@@ -116,25 +116,25 @@ def convert_and_calculate_object_ratio(bmp_image_path, jpg_image_path):
 
 # 定义函数：处理图像并计算比例
 def process_images_and_calculate_ratios(directory_path):
-    # 找到指定目录下所有的.bmp文件
     global ratio
-    bmp_filenames = [f for f in os.listdir(directory_path) if f.endswith('.bmp')]
-    # 创建一个空的DataFrame，用于存储计算结果
+    aim_filenames = [f for f in os.listdir(directory_path) if f.endswith('T.jpg')]
+    file_count = len(aim_filenames)
     df = pd.DataFrame(columns=['filename', 'object_ratio', 'contour_ratio', 'watershed_ratio', 'avg_ratio'])
-    # 遍历所有.bmp文件
-    for bmp_filename in bmp_filenames:
+    file_number = 0
+    for aim_filename in aim_filenames:
         # 将.bmp文件名转换为.jpg文件名
-        jpg_filename = bmp_filename.replace('.bmp', '.jpg')
+        jpg_filename = aim_filename.replace('T.jpg', '.jpg')
         # 构建.jpg和.bmp文件的完整路径
         jpg_image_path = os.path.join(directory_path, jpg_filename)
-        bmp_image_path = os.path.join(directory_path, bmp_filename)
+        aim_image_path = os.path.join(directory_path, aim_filename)
         # 调用convert_and_calculate_object_ratio函数处理图像并计算比例
-        ratio, contour_ratio, watershed_ratio, avg_ratio = convert_and_calculate_object_ratio(bmp_image_path, jpg_image_path)
+        ratio, contour_ratio, watershed_ratio, avg_ratio = convert_and_calculate_object_ratio(aim_image_path, jpg_image_path)
         # 将.jpg文件名的扩展名去掉
         jpg_filename_no_ext = jpg_filename.replace('.jpg', '')
         # 将计算结果添加到DataFrame中
         df = pd.concat([df, pd.DataFrame([{'filename': jpg_filename_no_ext, 'object_ratio': ratio, 'contour_ratio': contour_ratio, 'watershed_ratio': watershed_ratio, 'avg_ratio': avg_ratio}])], ignore_index=True)
-
+        file_number += 1
+        print("Data processing：" + str(file_number) + "/" + str(file_count))
         # 返回DataFrame
     return df
 

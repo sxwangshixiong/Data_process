@@ -33,7 +33,7 @@ def draw_rectangle_and_save(images_path, images_path_out):
             continue
 
         cv2.rectangle(image, (0, 190), (1280, 720), (0, 0, 255), 1)
-        original_jpg_filename = filename.replace('.bmp', '.bmp')
+        original_jpg_filename = filename.replace('T.jpg', '.jpg')
         cv2.imwrite(os.path.join(images_path_out, original_jpg_filename), image)
 
 def annotate_objects_A(images_path_out):
@@ -75,7 +75,7 @@ def annotate_objects(images_path_out):
     global counts, category
     df = pd.DataFrame(columns=['filename'] + categories)
 
-    filenames = sorted([f for f in os.listdir(images_path_out) if f.endswith('.bmp')])
+    filenames = sorted([f for f in os.listdir(images_path_out) if f.endswith('T.jpg')])
     total_images = len(filenames)
 
     for idx, filename in enumerate(filenames):
@@ -111,7 +111,7 @@ def annotate_objects(images_path_out):
 
 def category_statistics():
     # images_path = "/home/sxwang/SOTAtest/231215MightyOutput/20231215_172140641/result_out/-"
-    images_path = "/home/sxwang/SOTAtest/231219MightyOutput/20231219_133013/20231219_135601721/result_out/df_1_20231219_140738988"
+    images_path = "/home/sxwang/SOTAtest/231229MightyOutput/20231229_150659/20231229_152308991/result_out/df_5_20231229_161511211"
     new_folder_path = os.path.join(images_path + "/result")
     if not os.path.exists(new_folder_path):
         os.makedirs(new_folder_path)

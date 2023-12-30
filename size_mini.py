@@ -2,10 +2,9 @@ import cv2
 import os
 
 # 图片路径
-# dir_path = '/media/sxwang/Extreme SSD/1229/MightyOutput/20231229_174916/20231229_175040969/raw_images'
-# out_dir_path = '/media/sxwang/Extreme SSD/1229/MightyOutput/20231229_174916/20231229_175040969/raw_image'
-dir_path = '/home/sxwang/SOTAtest/231219MightyOutput/20231219_133013/20231219_135601721/raw_images'
-out_dir_path = '/home/sxwang/SOTAtest/231219MightyOutput/20231219_133013/20231219_135601721/raw_images'
+
+dir_path = '/home/sxwang/SOTAtest/231219MightyOutput/20231219_091139/20231219_091143700/raw'
+out_dir_path = '/home/sxwang/SOTAtest/231219MightyOutput/20231219_091139/20231219_091143700/raw'
 if not os.path.exists(out_dir_path):
     os.makedirs(out_dir_path)
 

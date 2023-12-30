@@ -32,7 +32,7 @@ def sample_chose(df_all, df_dict, directory_path, directory_path_or, b1, n, key=
 
         # 在directory_path下复制满足提取的filename的bmp文件
         for filename in selected_filenames:
-            bmp_filename = filename + '.bmp'
+            bmp_filename = filename + 'T.jpg'
             source_path = os.path.join(directory_path, bmp_filename)
             # 复制文件
             dst_path = os.path.join(new_folder_path, bmp_filename)
@@ -59,7 +59,7 @@ def average_caculate(df, key):
 def data_average_caculate(df, directory_path, A, B, A11, B11, r):
     average_caculate(df, 0)
     df.to_excel(directory_path + "/result/output.xlsx")
-    df = sort_and_filter(df, A, B)
+    df = sort_and_filter(df, A, B11)
     df.to_excel(directory_path + "/result/output1.xlsx")
     df_dict, b1 = split_df(df, A, B, A11, B11, r)
     df_all = pd.DataFrame(

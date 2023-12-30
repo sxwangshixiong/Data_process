@@ -12,12 +12,18 @@ def get_files(dir_path, flag):
     else:
         sign = 'vdf'
     files = []
+    state = 0
     for root, dirs, files_in_dir in os.walk(dir_path):
         for file in files_in_dir:
             if file.startswith(sign) and file.endswith('.xlsx'):
                 files.append(os.path.join(root, file))
+                state += 1
+            else:
+                print("Here is no such file")
 
-    return files, len(files)
+
+
+    return files, len(files), state
 
 
 def Frequency_reviews(files):
@@ -118,25 +124,92 @@ def draw_text(ax, s, total_waste, total_wastes, i, counter):
                     fontsize=10)
         t += 1
 
-def draw_sum_bar_chart(files, dir_path, figsize, test_name, flag):
-    colors = {
-        'pcb': (152 / 255, 223 / 255, 138 / 255),
-        'rubber': (196 / 255, 156 / 255, 148 / 255),
-        'tube': (255 / 255, 152 / 255, 150 / 255),
-        'wire': (197 / 255, 176 / 255, 213 / 255),
-        'can': (255 / 255, 187 / 255, 120 / 255),
-        'painted_metal': (174 / 255, 199 / 255, 232 / 255)
-    }
-    if flag == 1:
-        data = []
-        total_wastes = []
-        for i, file in enumerate(files, start=1):
-            df = pd.read_excel(file)
+def draw_sum_bar_chart(dir_path, figsize, test_name, flag):
+    files, df_number, state = get_files(dir_path, flag)
+    if state != 0:
+        colors = {
+            'pcb': (152 / 255, 223 / 255, 138 / 255),
+            'rubber': (196 / 255, 156 / 255, 148 / 255),
+            'tube': (255 / 255, 152 / 255, 150 / 255),
+            'wire': (197 / 255, 176 / 255, 213 / 255),
+            'can': (255 / 255, 187 / 255, 120 / 255),
+            'painted_metal': (174 / 255, 199 / 255, 232 / 255)
+        }
+        if flag == 1:
+            data = []
+            total_wastes = []
+            for i, file in enumerate(files, start=1):
+                df = pd.read_excel(file)
 
-            sums = df[['pcb', 'rubber', 'tube', 'wire', 'can', 'painted_metal']].sum()
-            data.append(sums)
-            total_wastes.append(sums.sum())
-    else:
+                sums = df[['pcb', 'rubber', 'tube', 'wire', 'can', 'painted_metal']].sum()
+                data.append(sums)
+                total_wastes.append(sums.sum())
+        else:
+            # 准备数据
+            data = []
+            total_wastes = []
+            for i, file in enumerate(files, start=1):
+                # 将Excel文件加载到pandas DataFrame中
+                df = pd.read_excel(file)
+                df.iloc[:, 1:21] = df.iloc[:, 1:21].apply(pd.to_numeric, errors='coerce')
+                df.iloc[:, 1:21] = df.iloc[:, 1:21] - df.iloc[0, 1:21]
+
+                dff = df
+                dff.iloc[:, 1:21] = dff.iloc[:, 1:21].apply(pd.to_numeric, errors='coerce')
+                dff.iloc[:, 1:21] = dff.iloc[:, 1:21].diff()
+
+                print(dff)
+                # 计算各类总数
+                sums = dff[['pcb', 'rubber', 'tube', 'wire', 'can', 'painted_metal']].sum()
+                data.append(sums)
+                total_wastes.append(sums.sum())
+
+        df_total = pd.DataFrame(data, index=[os.path.basename(f)[:-5] for f in files])
+
+        df_total.index = [i.replace('_' + str(test_date) + '_', ': ') for i in df_total.index]
+        df_total = df_total.apply(pd.to_numeric, errors='coerce')
+
+        fig, ax = plt.subplots(figsize=figsize)
+        df_total.plot(kind='bar', stacked=True, color=[colors[col] for col in df_total.columns], ax=ax, width=0.65)
+        if flag == 1:
+            plt.title('Quantity of waste from the random sampling at 1 minute from: ' + test_name)
+            plt.xlabel('Batch of random sampling close to average density')
+            plt.ylabel('Waste quantity of each random sampling')
+        else:
+            plt.title('Quantity of waste detected by sensor during the 1-minute random sampling from: ' + test_name)
+            plt.xlabel('Batch of random sampling close to average density')
+            plt.ylabel('Waste quantity of each random sampling')
+
+        plt.xticks(rotation=0)
+        plt.ylim(0, value_max)
+        plt.legend(bbox_to_anchor=(0., 0.94, 1., .102), loc='lower left', ncol=6, mode="expand", borderaxespad=0.1)
+
+        counter = 1
+        for df in range(df_number):
+            for i, p in enumerate(ax.patches):
+                total_waste = total_wastes[counter - 1]
+                draw_text(ax, df_number, total_waste, total_wastes, i, counter)
+                # print(total_waste)
+                # print(i)
+            counter += 1
+            df += 1
+
+        plt.savefig(dir_path + "/Quantity of waste from the random sampling at 1 minute from: " + test_name + ".png")
+        plt.show()
+
+def draw_sum_bar_chart_for_sensor(dir_path, figsize, test_name, flag):
+    files, df_number, state= get_files(dir_path, flag)
+    if state != 0:
+        # 设置类别颜色
+        colors = {
+            'pcb': (152 / 255, 223 / 255, 138 / 255),
+            'rubber': (196 / 255, 156 / 255, 148 / 255),
+            'tube': (255 / 255, 152 / 255, 150 / 255),
+            'wire': (197 / 255, 176 / 255, 213 / 255),
+            'can': (255 / 255, 187 / 255, 120 / 255),
+            'painted_metal': (174 / 255, 199 / 255, 232 / 255)
+        }
+
         # 准备数据
         data = []
         total_wastes = []
@@ -156,111 +229,49 @@ def draw_sum_bar_chart(files, dir_path, figsize, test_name, flag):
             data.append(sums)
             total_wastes.append(sums.sum())
 
-    df_total = pd.DataFrame(data, index=[os.path.basename(f)[:-5] for f in files])
+        # 创建DataFrame
+        df_total = pd.DataFrame(data, index=[os.path.basename(file)[:-5] for file in files])
 
-    df_total.index = [i.replace('_' + str(test_date) + '_', ': ') for i in df_total.index]
-    df_total = df_total.apply(pd.to_numeric, errors='coerce')
+        # 处理文件名，将df_2一行显示，20231215去掉，剩下173245321第二行显示
+        df_total.index = [i.replace('_' + str(test_date) + '_', ': ') for i in df_total.index]
 
-    fig, ax = plt.subplots(figsize=figsize)
-    df_total.plot(kind='bar', stacked=True, color=[colors[col] for col in df_total.columns], ax=ax, width=0.65)
-    if flag == 1:
-        plt.title('Quantity of waste from the random sampling at 1 minute from: ' + test_name)
-        plt.xlabel('Batch of random sampling close to average density')
-        plt.ylabel('Waste quantity of each random sampling')
-    else:
+        # 创建柱形图
+        fig, ax = plt.subplots(figsize=figsize)
+        df_total.plot(kind='bar', stacked=True, color=[colors[col] for col in df_total.columns], ax=ax,
+                      width=0.65)  # 设置宽度
         plt.title('Quantity of waste detected by sensor during the 1-minute random sampling from: ' + test_name)
         plt.xlabel('Batch of random sampling close to average density')
         plt.ylabel('Waste quantity of each random sampling')
+        plt.xticks(rotation=0)  # 横坐标横写
+        plt.ylim(0, value_max)  # 设置y轴范围
+        plt.legend(bbox_to_anchor=(0., 0.94, 1., .102), loc='lower left', ncol=6, mode="expand", borderaxespad=0.1)
 
-    plt.xticks(rotation=0)
-    plt.ylim(0, value_max)
-    plt.legend(bbox_to_anchor=(0., 0.94, 1., .102), loc='lower left', ncol=6, mode="expand", borderaxespad=0.1)
+        counter = 1
+        for df in range(df_number):
+            for i, p in enumerate(ax.patches):
+                total_waste = total_wastes[counter - 1]
+                draw_text(ax, df_number, total_waste, total_wastes, i, counter)
+                # print(total_waste)
+                # print(i)
+            counter += 1
+            df += 1
 
-    counter = 1
-    for df in range(df_number):
-        for i, p in enumerate(ax.patches):
-            total_waste = total_wastes[counter - 1]
-            draw_text(ax, df_number, total_waste, total_wastes, i, counter)
-            # print(total_waste)
-            # print(i)
-        counter += 1
-        df += 1
-
-    plt.savefig(dir_path + "/Quantity of waste from the random sampling at 1 minute from: " + test_name + ".png")
-    plt.show()
-
-def draw_sum_bar_chart_for_sensor(dir_path, figsize, test_name, flag):
-    files, df_number = get_files(dir_path, flag)
-    # 设置类别颜色
-    colors = {
-        'pcb': (152 / 255, 223 / 255, 138 / 255),
-        'rubber': (196 / 255, 156 / 255, 148 / 255),
-        'tube': (255 / 255, 152 / 255, 150 / 255),
-        'wire': (197 / 255, 176 / 255, 213 / 255),
-        'can': (255 / 255, 187 / 255, 120 / 255),
-        'painted_metal': (174 / 255, 199 / 255, 232 / 255)
-    }
-
-    # 准备数据
-    data = []
-    total_wastes = []
-    for i, file in enumerate(files, start=1):
-        # 将Excel文件加载到pandas DataFrame中
-        df = pd.read_excel(file)
-        df.iloc[:, 1:21] = df.iloc[:, 1:21].apply(pd.to_numeric, errors='coerce')
-        df.iloc[:, 1:21] = df.iloc[:, 1:21] - df.iloc[0, 1:21]
-
-        dff = df
-        dff.iloc[:, 1:21] = dff.iloc[:, 1:21].apply(pd.to_numeric, errors='coerce')
-        dff.iloc[:, 1:21] = dff.iloc[:, 1:21].diff()
-
-        print(dff)
-        # 计算各类总数
-        sums = dff[['pcb', 'rubber', 'tube', 'wire', 'can', 'painted_metal']].sum()
-        data.append(sums)
-        total_wastes.append(sums.sum())
-
-    # 创建DataFrame
-    df_total = pd.DataFrame(data, index=[os.path.basename(file)[:-5] for file in files])
-
-    # 处理文件名，将df_2一行显示，20231215去掉，剩下173245321第二行显示
-    df_total.index = [i.replace('_' + str(test_date) + '_', ': ') for i in df_total.index]
-
-    # 创建柱形图
-    fig, ax = plt.subplots(figsize=figsize)
-    df_total.plot(kind='bar', stacked=True, color=[colors[col] for col in df_total.columns], ax=ax,
-                  width=0.65)  # 设置宽度
-    plt.title('Quantity of waste detected by sensor during the 1-minute random sampling from: ' + test_name)
-    plt.xlabel('Batch of random sampling close to average density')
-    plt.ylabel('Waste quantity of each random sampling')
-    plt.xticks(rotation=0)  # 横坐标横写
-    plt.ylim(0, value_max)  # 设置y轴范围
-    plt.legend(bbox_to_anchor=(0., 0.94, 1., .102), loc='lower left', ncol=6, mode="expand", borderaxespad=0.1)
-
-    counter = 1
-    for df in range(df_number):
-        for i, p in enumerate(ax.patches):
-            total_waste = total_wastes[counter - 1]
-            draw_text(ax, df_number, total_waste, total_wastes, i, counter)
-            # print(total_waste)
-            # print(i)
-        counter += 1
-        df += 1
-
-    plt.savefig(dir_path + "/Quantity of waste detected by sensor during the 1-minute random sampling from: " + test_name + ".png")
-    plt.show()
+        plt.savefig(dir_path + "/Quantity of waste detected by sensor during the 1-minute random sampling from: " + test_name + ".png")
+        plt.show()
 
 
-dir_path = '/home/sxwang/SOTAtest/231219MightyOutput/20231219_133013/20231219_135601721/result_out'
-test_name = 'Test_' + '20231219_135601721'
-test_date = 20231219
+dir_path = '/home/sxwang/SOTAtest/231229MightyOutput/20231229_150659/20231229_152308991/result_out'
+test_name = 'Test_' + '20231229_152308991'
+test_date = 20231229
 flag = 1
-value_max = 125
-files, df_number = get_files(dir_path, flag)
+value_max = 80
 
+files, df_number, another_variable = get_files(dir_path, flag)
 print("files: ", files)
 
-draw_sum_bar_chart(files, dir_path, (10, 6), test_name, 1)
+
+draw_sum_bar_chart(dir_path, (10, 6), test_name, 1)
 draw_sum_bar_chart_for_sensor(dir_path, (10, 6), test_name, 0)
 Frequency_reviews(files)
 Number_of_manual_reviews(files)
+

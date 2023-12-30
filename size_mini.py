@@ -13,6 +13,7 @@ if not os.path.exists(out_dir_path):
 for filename in os.listdir(dir_path):
     if filename.endswith('.bmp'):
         # 读取图片
+
         image = cv2.imread(os.path.join(dir_path, filename))
         # 将图片保存为jpg
         cv2.imwrite(os.path.join(out_dir_path, filename[:-4] + 'T.jpg'), image)
